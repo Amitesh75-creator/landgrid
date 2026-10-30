@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>LandGrid</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Manrope:wght@400;500;600&display=swap">
+<style>
+/* Layout: green fields in soft light in the hero, then a rhythm of deep teal and pale bands, a teal band for owners abroad. Cormorant for display, Manrope for text; mint teal is the one accent. */
+:root {
+  --espresso: #0c2426;
+  --espresso-2: #103033;
+  --ivory: #edf1ef;
+  --paper: #ffffff;
+  --ink: #12292b;
+  --fg: #eef3f1;
+  --muted: #a9bfbc;
+  --muted-ink: #546a6b;
+  --gold: #9fd0c8;
+  --gold-soft: #cfe6e0;
+  --clay: #1f5a5c;
+  --line: rgba(238, 243, 241, 0.14);
+  --line-ink: rgba(18, 41, 43, 0.14);
+  --serif: "Cormorant Garamond", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --sans: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --gutter-l: max(20px, env(safe-area-inset-left, 0px));
+  --gutter-r: max(20px, env(safe-area-inset-right, 0px));
+  --ease: cubic-bezier(.16, .8, .2, 1);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--espresso); color: var(--fg);
+  font-family: var(--sans); font-size: 16.5px; line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { font-family: var(--serif); font-weight: 400; margin: 0; line-height: 1.1; text-wrap: balance; }
+p { margin: 0; }
+a { color: inherit; }
+em { font-style: italic; }
+.sub, .big, .fig b, summary, .report .note, .plot-note, .mark, .chain span { font-family: var(--serif); }
+summary { font-size: 25px !important; }
+.report .note { font-size: 21px !important; }
+:focus-visible { outline: 1px solid var(--gold); outline-offset: 4px; }
+::selection { background: var(--gold); color: var(--espresso); }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+
+.wrap { max-width: 1240px; margin: 0 auto; padding-left: var(--gutter-l); padding-right: var(--gutter-r); }
+.label { font-size: 11px; font-weight: 600; letter-spacing: 0.26em; text-transform: uppercase; color: var(--gold); }
+.btn {
+  display: inline-block; cursor: pointer; text-decoration: none; background: transparent; color: var(--fg);
+  font: 600 11px/1 var(--sans); letter-spacing: 0.24em; text-transform: uppercase;
+  padding: 19px 36px; border: 1px solid rgba(245,238,227,.5); border-radius: 999px;
+  transition: background .5s var(--ease), color .5s var(--ease), border-color .5s var(--ease), transform .5s var(--ease);
+}
+.btn:hover { background: var(--gold); color: var(--espresso); border-color: var(--gold); transform: translateY(-2px); }
+
+/* light bands */
+.light { background: var(--ivory); color: var(--ink); }
+.light .label { color: var(--clay); }
+
+/* chainage line */
+.chain { position: fixed; z-index: 20; top: 0; left: 0; right: 0; padding-top: env(safe-area-inset-top, 0px); pointer-events: none; }
+.chain i { display: block; height: 2px; background: linear-gradient(90deg, var(--clay), var(--gold)); transform: scaleX(0); transform-origin: left; }
+.chain span { position: absolute; right: max(20px, env(safe-area-inset-right, 0px)); top: calc(env(safe-area-inset-top, 0px) + 8px); font-size: 11px; font-style: italic; letter-spacing: .08em; color: #b9cfca; font-variant-numeric: tabular-nums; mix-blend-mode: difference; }
+
+/* ---------- Hero ---------- */
+.hero { position: relative; min-height: min(92vh, 860px); display: flex; flex-direction: column; overflow: hidden; background: var(--espresso); }
+.hero canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.hero::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 58%, rgba(12,36,38,0) 0%, rgba(12,36,38,.5) 62%, rgba(12,36,38,.92) 100%),
+    linear-gradient(180deg, rgba(12,36,38,.65) 0%, rgba(12,36,38,0) 24%, rgba(12,36,38,0) 72%, var(--espresso) 100%);
+}
+.nav { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-block: 30px; }
+.mark { font-size: 15px; letter-spacing: 0.5em; text-transform: uppercase; text-decoration: none; margin-right: -0.5em; }
+.nav ul { display: flex; gap: 40px; list-style: none; margin: 0; padding: 0; }
+.nav ul a, .nav .enquire { position: relative; font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase; text-decoration: none; color: #b9cfca; transition: color .4s; }
+.nav ul a::after { content: ""; position: absolute; left: 0; right: .3em; bottom: -6px; height: 1px; background: var(--gold); transform: scaleX(0); transform-origin: left; transition: transform .6s var(--ease); }
+.nav ul a:hover { color: var(--fg); }
+.nav ul a:hover::after { transform: scaleX(1); }
+.nav .enquire:hover { color: var(--gold); }
+
+.hero-body { position: relative; z-index: 2; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding-block: 80px 120px; will-change: transform, opacity; }
+.hero h1 { font-size: clamp(44px, 9vw, 128px); letter-spacing: 0.26em; margin-right: -0.26em; text-transform: uppercase; animation: rise 1.8s var(--ease) both; }
+.hero .sub { margin-top: 26px; font-size: clamp(19px, 2vw, 25px); font-style: italic; color: var(--gold-soft); animation: rise 1.8s .25s var(--ease) both; }
+.hero .label { margin-bottom: 30px; animation: rise 1.8s var(--ease) both; }
+.hero .btn { margin-top: 48px; animation: rise 1.8s .45s var(--ease) both; }
+.plot-note { position: absolute; z-index: 2; left: 50%; bottom: 34px; transform: translateX(-50%); font-size: 13px; font-style: italic; color: var(--muted); white-space: nowrap; }
+@keyframes rise { from { opacity: .001; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+/* ---------- Sections ---------- */
+section { padding-block: 140px; }
+
+.statement { text-align: center; padding-bottom: 110px; }
+.statement p.big { font-size: clamp(26px, 3.3vw, 42px); line-height: 1.35; max-width: 30ch; margin: 28px auto 0; }
+.statement em { color: var(--clay); }
+
+.figures { padding-block: 0 120px; }
+.figures .wrap { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.figs { border-top: 1px solid var(--line-ink); border-bottom: 1px solid var(--line-ink); }
+.fig { padding: 54px 24px; text-align: center; min-width: 0; }
+.fig + .fig { border-left: 1px solid var(--line-ink); }
+.fig b { display: block; font-weight: 400; font-size: clamp(42px, 4.8vw, 68px); line-height: 1; }
+.fig b small { font-size: .4em; letter-spacing: .1em; margin-left: 4px; color: var(--clay); }
+.fig span { display: block; margin-top: 16px; font-size: 12px; letter-spacing: .28em; text-transform: uppercase; color: var(--muted-ink); }
+
+.head { display: flex; justify-content: space-between; align-items: end; flex-wrap: wrap; gap: 20px 40px; margin-bottom: 72px; }
+.head h2 { font-size: clamp(38px, 5vw, 72px); }
+.head h2 em { color: var(--gold); }
+.head p { color: var(--muted); max-width: 40ch; }
+.light .head p { color: var(--muted-ink); }
+
+.services { border-top: 1px solid var(--line); }
+.svc { position: relative; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 12px 60px; padding-block: 38px; border-bottom: 1px solid var(--line); align-items: baseline; }
+.svc::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; background: var(--gold); transform: scaleX(0); transform-origin: left; transition: transform 1s var(--ease); }
+.svc h3 { font-size: clamp(28px, 3vw, 40px); transition: color .5s, transform .8s var(--ease); }
+.svc p { color: var(--muted); max-width: 52ch; transition: color .5s; }
+.svc:hover::after { transform: scaleX(1); }
+.svc:hover h3 { color: var(--gold); transform: translateX(10px); }
+.svc:hover p { color: var(--fg); }
+
+.record .wrap { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 90px; align-items: center; }
+.record h2 { font-size: clamp(36px, 4.4vw, 60px); margin-top: 22px; }
+.record .copy p { color: var(--muted-ink); margin-top: 26px; max-width: 40ch; }
+.report { background: var(--paper); border-radius: 4px; padding: 44px 46px 40px; min-width: 0; box-shadow: 0 50px 80px -50px rgba(10, 40, 42, .45), 0 2px 0 rgba(43,32,24,.04); transform: rotate(-.6deg); transition: transform 1s var(--ease), box-shadow 1s var(--ease); }
+.report:hover { transform: rotate(0deg) translateY(-6px); box-shadow: 0 60px 90px -50px rgba(10, 40, 42, .55); }
+.report-head { display: flex; justify-content: space-between; gap: 8px 20px; flex-wrap: wrap; align-items: baseline; padding-bottom: 22px; border-bottom: 1px solid var(--line-ink); }
+.report-head h3 { font-size: 26px; }
+.report-head small { font-size: 11px; letter-spacing: .28em; text-transform: uppercase; color: var(--clay); }
+.report table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 17px; }
+.report td { padding: 12px 0; border-bottom: 1px solid var(--line-ink); vertical-align: top; }
+.report td:first-child { color: var(--muted-ink); width: 40%; padding-right: 16px; }
+.report tr:last-child td { border-bottom: 0; }
+.report .note { margin-top: 22px; font-style: italic; font-size: 18px; }
+.report .note span { display: block; margin-top: 10px; font-style: normal; font-size: 11px; letter-spacing: .28em; text-transform: uppercase; color: var(--muted-ink); }
+
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-top: 1px solid var(--line); }
+.steps li { position: relative; padding: 34px 28px 0 0; min-width: 0; }
+.steps li::before { content: ""; position: absolute; top: -4px; left: 0; width: 7px; height: 7px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 6px rgba(159,208,200,.12); }
+.steps .n { font-size: 15px; letter-spacing: .2em; color: var(--gold); }
+.steps h3 { font-size: 24px; margin-top: 18px; }
+.steps p { color: var(--muted); font-size: 16.5px; margin-top: 12px; }
+
+.abroad { position: relative; text-align: center; overflow: hidden; background: radial-gradient(ellipse at 50% 0%, #2a6a66 0%, #174443 45%, #0c2426 100%); }
+.abroad .label { color: var(--gold-soft); }
+.abroad h2 { font-size: clamp(34px, 4.6vw, 64px); max-width: 18ch; margin: 26px auto 0; }
+.abroad p { color: #c6dbd6; max-width: 54ch; margin: 30px auto 0; }
+.states { margin-top: 52px; font-size: 13px; letter-spacing: .3em; text-transform: uppercase; color: var(--gold-soft); line-height: 2.4; }
+.states span { white-space: nowrap; }
+.states span + span::before { content: "·"; margin: 0 18px; color: rgba(207,230,224,.5); }
+
+.faq .wrap { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 80px; }
+.faq h2 { font-size: clamp(36px, 4.4vw, 60px); }
+.faq details { border-bottom: 1px solid var(--line-ink); }
+.faq details:first-child { border-top: 1px solid var(--line-ink); }
+summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 24px; padding: 26px 0; font-size: 23px; transition: color .4s; }
+summary:hover { color: var(--clay); }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; color: var(--clay); font-size: 26px; line-height: 1; transition: transform .6s var(--ease); }
+details[open] summary::after { transform: rotate(45deg); }
+details p { color: var(--muted-ink); padding-bottom: 28px; max-width: 58ch; }
+details[open] p { animation: open .7s var(--ease); }
+@keyframes open { from { opacity: .001; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+
+.contact { position: relative; background: radial-gradient(ellipse at 85% 10%, rgba(159,208,200,.16), rgba(159,208,200,0) 55%), var(--espresso-2); }
+.contact .wrap { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 90px; }
+.contact h2 { font-size: clamp(38px, 5vw, 68px); margin-top: 22px; }
+.contact h2 em { color: var(--gold); }
+.contact .copy p { color: var(--muted); margin-top: 24px; max-width: 38ch; }
+.contact address { font-style: normal; margin-top: 44px; display: grid; gap: 14px; }
+.contact address div { display: grid; grid-template-columns: 8.5em minmax(0, 1fr); gap: 12px; }
+.contact address span { font-size: 11px; letter-spacing: .28em; text-transform: uppercase; color: var(--gold); padding-top: 5px; }
+form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 34px 32px; align-content: start; }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field.full { grid-column: 1 / -1; }
+.field label { font-size: 11px; letter-spacing: .28em; text-transform: uppercase; color: var(--muted); }
+.field input, .field select, .field textarea {
+  font: 17px/1.4 var(--sans); color: var(--fg); background: transparent;
+  border: 0; border-bottom: 1px solid rgba(245,238,227,.25); padding: 8px 0 12px; border-radius: 0; width: 100%;
+  transition: border-color .4s;
+}
+.field select option { color: #111; }
+.field textarea { resize: vertical; min-height: 70px; }
+.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-bottom-color: var(--gold); }
+.form-foot { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; margin-top: 6px; }
+.form-note { font-style: italic; color: var(--gold-soft); font-size: 16px; }
+
+footer { background: var(--espresso); border-top: 1px solid var(--line); }
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px 32px; padding-block: 40px; font-size: 13px; color: var(--muted); }
+footer .mark { color: var(--fg); }
+
+/* sections settle in as they arrive */
+.rv { transition: transform 1.3s var(--ease), opacity 1.3s ease; }
+.rv.wait { transform: translateY(44px); opacity: .25; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 960px) {
+  .nav ul { display: none; }
+  .figures .wrap { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fig:nth-child(3) { border-left: 0; }
+  .fig:nth-child(n+3) { border-top: 1px solid var(--line-ink); }
+  .svc, .record .wrap, .faq .wrap, .contact .wrap { grid-template-columns: minmax(0, 1fr); gap: 56px; }
+  .svc { gap: 12px; }
+  .steps { grid-template-columns: minmax(0, 1fr); border-top: 0; border-left: 1px solid var(--line); }
+  .steps li { padding: 0 0 40px 30px; }
+  .steps li::before { top: 6px; left: -4px; }
+}
+@media (max-width: 600px) {
+  section { padding-block: 96px; }
+  .statement { padding-bottom: 80px; }
+  .figures { padding-block: 0 90px; }
+  .fig { padding: 40px 12px; }
+  .report { padding: 30px 22px; transform: none; }
+  form { grid-template-columns: minmax(0, 1fr); }
+  .contact address div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .mark { letter-spacing: .36em; }
+  .hero h1 { letter-spacing: .16em; margin-right: -0.16em; }
+  .plot-note { white-space: normal; text-align: center; width: calc(100% - 40px); }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="chain" aria-hidden="true"><i id="chain-line"></i><span id="chain-val">Ch. 0+000 m</span></div>
+
+<header class="hero" id="top">
+  <canvas id="map" aria-hidden="true"></canvas>
+  <div class="wrap nav">
+    <a class="mark" href="#top">LandGrid</a>
+    <ul>
+      <li><a href="#service">The service</a></li>
+      <li><a href="#record">On record</a></li>
+      <li><a href="#abroad">From abroad</a></li>
+      <li><a href="#faq">Questions</a></li>
+    </ul>
+    <a class="enquire" href="#contact">Enquire</a>
+  </div>
+
+  <div class="wrap hero-body">
+    <p class="label">Land protection · India</p>
+    <h1>LandGrid</h1>
+    <p class="sub">Your land in India, kept exactly as you left it.</p>
+    <a class="btn" href="#contact">Arrange a site visit</a>
+  </div>
+  <p class="plot-note">Sy. No. 142/2B · Kothur, Ranga Reddy · walked 14 October 2026</p>
+</header>
+
+<main>
+  <section class="statement light">
+    <div class="wrap">
+      <p class="label">The idea</p>
+      <p class="big">For families who live far from their land, we are the <em>presence on the ground</em>. We fence it, walk it every month and watch the records, so nothing changes without you knowing.</p>
+    </div>
+  </section>
+
+  <section class="figures light" aria-label="The service in figures">
+    <div class="wrap figs">
+      <div class="fig"><b>30<small>yrs</small></b><span>Title searched</span></div>
+      <div class="fig"><b>12</b><span>Site visits a year</span></div>
+      <div class="fig"><b>48<small>hrs</small></b><span>Report after each visit</span></div>
+      <div class="fig"><b>8</b><span>States covered</span></div>
+    </div>
+  </section>
+
+  <section id="service">
+    <div class="wrap">
+      <div class="head">
+        <h2>The <em>service</em></h2>
+        <p>Everything an empty plot needs, handled by one team that knows your land as well as you do.</p>
+      </div>
+      <div class="services">
+        <div class="svc"><h3>Boundary &amp; fencing</h3><p>A licensed survey, granite stones at every corner, a proper fence and a board bearing your family's name.</p></div>
+        <div class="svc"><h3>Monthly inspection</h3><p>Your officer walks the full boundary and sends dated, located photographs with a short written note.</p></div>
+        <div class="svc"><h3>Title watch</h3><p>Encumbrance and revenue records (patta, 7/12, RTC, khata) checked every quarter for anything registered against your survey number.</p></div>
+        <div class="svc"><h3>Encroachment response</h3><p>Documented the same day. With your approval, a police complaint, a legal notice and court action through our advocate.</p></div>
+        <div class="svc"><h3>Taxes &amp; dues</h3><p>Property tax and land revenue paid on time, every receipt kept. Paid dues are quiet proof of possession.</p></div>
+        <div class="svc"><h3>Power of Attorney</h3><p>A limited POA drafted for only the acts you choose, and attested at your nearest Indian consulate.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="record light" id="record">
+    <div class="wrap">
+      <div class="copy">
+        <p class="label">On record</p>
+        <h2>Every visit, written down</h2>
+        <p>You see your land each month without travelling to it. Every report is kept, so if a dispute ever reaches court, the history is already there.</p>
+      </div>
+      <article class="report" aria-label="Example visit report">
+        <div class="report-head">
+          <h3>Visit of 14 October 2026</h3>
+          <small>Example</small>
+        </div>
+        <table>
+          <tr><td>Plot</td><td>Sy. No. 142/2B, Kothur village, Shamshabad, Ranga Reddy</td></tr>
+          <tr><td>Extent</td><td>1 acre 12 guntas</td></tr>
+          <tr><td>Boundary stones</td><td>All four in place</td></tr>
+          <tr><td>Fence and gate</td><td>Intact, gate locked</td></tr>
+          <tr><td>Name board</td><td>Visible from the road</td></tr>
+          <tr><td>Photographs</td><td>18, located and timed</td></tr>
+        </table>
+        <p class="note">"Foundation work has begun on the plot to the east. It sits well inside their line. We will look again in two weeks."<span>K. Srinivas, field officer</span></p>
+      </article>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="head">
+        <h2>Six weeks to <em>protected</em></h2>
+        <p>All of it over phone, video and courier. There is no need to fly in.</p>
+      </div>
+      <ol class="steps">
+        <li><span class="n">I</span><h3>Your papers</h3><p>Scans of the deed and latest land record.</p></li>
+        <li><span class="n">II</span><h3>Title search</h3><p>Thirty years of encumbrance, matched to the revenue records.</p></li>
+        <li><span class="n">III</span><h3>Survey</h3><p>Your boundary fixed on the ground, with you watching by video.</p></li>
+        <li><span class="n">IV</span><h3>Fence &amp; board</h3><p>Stones, fence and name board raised and photographed.</p></li>
+        <li><span class="n">V</span><h3>Watch</h3><p>Monthly visits and quarterly record checks, from then on.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="abroad" id="abroad">
+    <div class="wrap">
+      <p class="label">From abroad</p>
+      <h2>One person in India who answers for your land</h2>
+      <p>Most of our clients live in the United States, the United Kingdom, the Gulf, Canada and Australia. Your relationship manager calls at an hour that suits you, and keeps every deed, receipt and report in one place. We also look after inherited family land, where old records and many heirs need patient work first.</p>
+      <div class="states">
+        <span>Telangana</span><span>Andhra Pradesh</span><span>Karnataka</span><span>Tamil Nadu</span><span>Maharashtra</span><span>Kerala</span><span>Gujarat</span><span>Punjab</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="faq light" id="faq">
+    <div class="wrap">
+      <h2>Questions</h2>
+      <div>
+        <details open>
+          <summary>Do I need to come to India?</summary>
+          <p>No. We work from scanned documents and you join the survey by video. If a Power of Attorney is needed, you sign it at the Indian consulate near you.</p>
+        </details>
+        <details>
+          <summary>Which documents should I have ready?</summary>
+          <p>Your registered deed, the latest land record for your state, any old survey sketch and recent tax receipts. Anything missing, we can apply for as certified copies.</p>
+        </details>
+        <details>
+          <summary>What happens if someone encroaches?</summary>
+          <p>We photograph it the same day and call you. With your approval we file a police complaint, send a legal notice through our advocate and support an injunction if needed.</p>
+        </details>
+        <details>
+          <summary>Do you take control of my property?</summary>
+          <p>Never. The land and every decision remain yours. Any Power of Attorney covers only the tasks you choose.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<section class="contact" id="contact">
+  <div class="wrap">
+    <div class="copy">
+      <p class="label">Enquire</p>
+      <h2>Begin with a <em>conversation</em></h2>
+      <p>Tell us a little about your land. Your relationship manager will call within one working day.</p>
+      <address>
+        <div><span>Telephone</span>+91 40 4000 1200</div>
+        <div><span>WhatsApp</span>+91 98480 12000</div>
+        <div><span>Email</span>care@landgrid.in</div>
+      </address>
+    </div>
+
+    <form id="enquiry" name="enquiry" method="POST" data-netlify="true" netlify-honeypot="bot-field" novalidate>
+      <input type="hidden" name="form-name" value="enquiry">
+      <p hidden><label>Leave this empty <input name="bot-field"></label></p>
+      <div class="field"><label for="f-name">Name</label><input id="f-name" name="name" required autocomplete="name"></div>
+      <div class="field"><label for="f-country">Country of residence</label><input id="f-country" name="country" autocomplete="country-name"></div>
+      <div class="field"><label for="f-email">Email</label><input id="f-email" name="email" type="email" autocomplete="email"></div>
+      <div class="field"><label for="f-phone">Phone, with country code</label><input id="f-phone" name="phone" type="tel" autocomplete="tel"></div>
+      <div class="field">
+        <label for="f-state">State of the land</label>
+        <select id="f-state" name="state">
+          <option>Telangana</option><option>Andhra Pradesh</option><option>Karnataka</option><option>Tamil Nadu</option>
+          <option>Maharashtra</option><option>Kerala</option><option>Gujarat</option><option>Punjab</option><option>Elsewhere</option>
+        </select>
+      </div>
+      <div class="field"><label for="f-survey">Survey number</label><input id="f-survey" name="survey"></div>
+      <div class="field full"><label for="f-msg">How may we help?</label><textarea id="f-msg" name="message"></textarea></div>
+      <div class="form-foot">
+        <button class="btn" type="submit">Send enquiry</button>
+        <p class="form-note" id="form-note" aria-live="polite"></p>
+      </div>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span class="mark">LandGrid</span>
+    <span>Hyderabad · Bengaluru · Pune</span>
+    <span>© 2026 LandGrid</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Contact form: 'preview' here; build.ps1 sets 'netlify' (Netlify Forms receives it) or 'offline' (GitHub Pages, no form backend).
+  var FORM_MODE = 'offline';
+  var form = document.getElementById('enquiry');
+  var note = document.getElementById('form-note');
+  var sendBtn = form.querySelector('button[type="submit"]');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var name = document.getElementById('f-name'), email = document.getElementById('f-email'), phone = document.getElementById('f-phone');
+    if (!name.value.trim()) { note.textContent = 'Please add your name so we know whom to call.'; name.focus(); return; }
+    if (!email.value.trim() && !phone.value.trim()) { note.textContent = 'Please add an email or phone number so we can reach you.'; email.focus(); return; }
+    if (email.value.trim() && !email.checkValidity()) { note.textContent = 'That email address looks incomplete. Please check it.'; email.focus(); return; }
+    var first = name.value.trim().split(' ')[0];
+    if (FORM_MODE === 'preview') { note.textContent = 'Thank you, ' + first + '. This is a design preview, so nothing was sent.'; return; }
+    if (FORM_MODE === 'offline') { note.textContent = 'Thank you, ' + first + '. Online enquiries are not open yet, so please email us at care@landgrid.in.'; return; }
+    sendBtn.disabled = true; note.textContent = 'Sending…';
+    fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(new FormData(form)).toString() })
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.status);
+        form.reset();
+        note.textContent = 'Thank you, ' + first + '. We have your enquiry and will call within one working day.';
+      })
+      .catch(function () {
+        note.textContent = 'Your enquiry did not go through. Please try again, or email us at care@landgrid.in.';
+      })
+      .then(function () { sendBtn.disabled = false; });
+  });
+
+  // Hero: green fields in soft light, dust in the air, one plot walked and marked.
+  var canvas = document.getElementById('map');
+  var ctx = canvas.getContext('2d');
+  var seed = 11;
+  function rand() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
+
+  var COLS = 12, ROWS = 9, pts = [], labels = [];
+  for (var r = 0; r <= ROWS; r++) {
+    pts[r] = [];
+    for (var c = 0; c <= COLS; c++) pts[r][c] = [c / COLS + (rand() - .5) * .045, r / ROWS + (rand() - .5) * .06];
+  }
+  for (var i = 0; i < ROWS * COLS; i++) labels.push((101 + i) + '/' + (1 + Math.floor(rand() * 4)));
+  var HR = 4, HC = 6;
+  labels[HR * COLS + HC] = '142/2B';
+
+  // greens of crops, fallow and scrub
+  var EARTH = ['#1d4a45', '#24534a', '#1a3f3d', '#2b5c50', '#21463f', '#2f5d55', '#193b38', '#335f52', '#264c45'];
+  var fields = [];
+  for (var j = 0; j < ROWS * COLS; j++) fields.push({ col: EARTH[Math.floor(rand() * EARTH.length)], ang: rand() * Math.PI, rows: rand() > .35 });
+
+  var motes = [];
+  for (var m = 0; m < 70; m++) motes.push({ x: rand(), y: rand(), r: .6 + rand() * 1.8, s: .00004 + rand() * .00012, ph: rand() * 6.28 });
+
+  var W, H, t = 0;
+  function size() {
+    var b = canvas.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = b.width; H = b.height;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  // camera: scrolling through the hero descends onto the plot; the pointer tilts the view a little
+  var fcx = (pts[HR][HC][0] + pts[HR + 1][HC + 1][0]) / 2, fcy = (pts[HR][HC][1] + pts[HR + 1][HC + 1][1]) / 2;
+  var zoom = 0, tz = 0, mx = 0, my = 0, tmx = 0, tmy = 0;
+  function P(r, c) {
+    var s = 1.25 + zoom * 2.4;
+    var fx = .5 + (fcx - .5) * zoom, fy = .5 + (fcy - .5) * zoom;
+    var ox = Math.sin(t * .0006) * W * .02 * (1 - zoom) + mx * W * .03, oy = Math.cos(t * .0005) * H * .015 * (1 - zoom) + my * H * .025;
+    return [(pts[r][c][0] - fx) * W * s + W / 2 + ox, (pts[r][c][1] - fy) * H * s + H / 2 + oy];
+  }
+  function quad(r, c) { var a = P(r, c), b = P(r, c + 1), d = P(r + 1, c + 1), e = P(r + 1, c); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.lineTo(d[0], d[1]); ctx.lineTo(e[0], e[1]); ctx.closePath(); return [a, b, d, e]; }
+  function ease(x) { x = Math.max(0, Math.min(1, x)); return 1 - Math.pow(1 - x, 3); }
+
+  function draw() {
+    ctx.fillStyle = '#102c2b'; ctx.fillRect(0, 0, W, H);
+
+    for (var r = 0; r < ROWS; r++) for (var c = 0; c < COLS; c++) {
+      var f = fields[r * COLS + c], q = quad(r, c);
+      var x0 = Math.min(q[0][0], q[3][0]), x1 = Math.max(q[1][0], q[2][0]);
+      var y0 = Math.min(q[0][1], q[1][1]), y1 = Math.max(q[2][1], q[3][1]);
+      if (x1 < 0 || x0 > W || y1 < 0 || y0 > H) continue;
+      ctx.fillStyle = f.col; ctx.fill();
+      if (f.rows) {
+        var cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, rad = Math.hypot(x1 - x0, y1 - y0) / 2;
+        var dx = Math.cos(f.ang), dy = Math.sin(f.ang);
+        ctx.save(); ctx.clip();
+        ctx.strokeStyle = 'rgba(0,18,16,0.25)'; ctx.lineWidth = 1.4;
+        for (var k = -rad; k < rad; k += 5) {
+          ctx.beginPath();
+          ctx.moveTo(cx - dx * rad - dy * k, cy - dy * rad + dx * k);
+          ctx.lineTo(cx + dx * rad - dy * k, cy + dy * rad + dx * k);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+    }
+
+    // village road and canal
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = 'rgba(215,238,230,' + (0.3 * (1 - zoom)) + ')'; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(-10, H * .28); ctx.bezierCurveTo(W * .3, H * .36, W * .62, H * .22, W + 10, H * .4); ctx.stroke();
+    ctx.strokeStyle = 'rgba(150,170,160,' + (0.4 * (1 - zoom)) + ')'; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(W * .2, H + 10); ctx.bezierCurveTo(W * .3, H * .7, W * .16, H * .4, W * .34, -10); ctx.stroke();
+
+    ctx.font = 'italic 11px "Cormorant Garamond", Georgia, serif'; ctx.textAlign = 'center';
+    for (var r2 = 0; r2 < ROWS; r2++) for (var c2 = 0; c2 < COLS; c2++) {
+      var q2 = quad(r2, c2);
+      ctx.strokeStyle = 'rgba(220,240,235,0.16)'; ctx.lineWidth = .8; ctx.stroke();
+      if (!(r2 === HR && c2 === HC) && (r2 * 7 + c2) % 3 === 0) {
+        ctx.fillStyle = 'rgba(220,240,235,0.26)';
+        ctx.fillText(labels[r2 * COLS + c2], (q2[0][0] + q2[2][0]) / 2, (q2[0][1] + q2[2][1]) / 2 + 4);
+      }
+    }
+
+    // low sun from the upper right, breathing slowly
+    var breathe = .9 + Math.sin(t * .0008) * .1;
+    var sun = ctx.createRadialGradient(W * .8, H * .1, 0, W * .8, H * .1, Math.max(W, H) * .85);
+    sun.addColorStop(0, 'rgba(200,240,225,' + (0.42 * breathe) + ')');
+    sun.addColorStop(.35, 'rgba(120,200,185,' + (0.16 * breathe) + ')');
+    sun.addColorStop(1, 'rgba(230,140,70,0)');
+    ctx.globalCompositeOperation = 'screen';
+    ctx.fillStyle = sun; ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'source-over';
+
+    // the protected plot: its boundary is walked once on arrival, then each stone glows softly
+    var hc = quad(HR, HC), pr = ease((t - 700) / 2600);
+    var per = 0;
+    for (var e = 0; e < 4; e++) per += Math.hypot(hc[(e + 1) % 4][0] - hc[e][0], hc[(e + 1) % 4][1] - hc[e][1]);
+    ctx.fillStyle = 'rgba(159,208,200,' + (0.16 * pr) + ')'; ctx.fill();
+    ctx.setLineDash([per * pr, per]);
+    ctx.strokeStyle = 'rgba(238,243,241,0.95)'; ctx.lineWidth = 1.3 + zoom; ctx.stroke();
+    ctx.setLineDash([]);
+    var pulse = (t % 2600) / 2600;
+    hc.forEach(function (p, i) {
+      var a = ease((pr - i / 4) * 6);
+      if (a <= 0) return;
+      ctx.fillStyle = 'rgba(238,243,241,' + a + ')';
+      ctx.beginPath(); ctx.arc(p[0], p[1], 2.6 + zoom * 2, 0, Math.PI * 2); ctx.fill();
+      if (pr >= 1) {
+        ctx.strokeStyle = 'rgba(200,240,230,' + (0.55 * (1 - pulse)) + ')'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(p[0], p[1], 3 + pulse * 18, 0, Math.PI * 2); ctx.stroke();
+      }
+    });
+    if (zoom > .15) {
+      ctx.font = 'italic ' + Math.round(13 + zoom * 9) + 'px "Cormorant Garamond", Georgia, serif';
+      ctx.fillStyle = 'rgba(238,243,241,' + Math.min(1, (zoom - .15) * 2) + ')';
+      ctx.fillText('Sy. No. 142/2B · 1 acre 12 guntas', (hc[0][0] + hc[2][0]) / 2, (hc[0][1] + hc[2][1]) / 2 + 6);
+    }
+
+    // dust drifting up through the light
+    motes.forEach(function (d) {
+      var y = (d.y - t * d.s) % 1; if (y < 0) y += 1;
+      var x = d.x + Math.sin(t * .0007 + d.ph) * .01;
+      var a = (.25 + .35 * Math.sin(t * .002 + d.ph)) * (1 - y * .5);
+      if (a <= 0) return;
+      ctx.fillStyle = 'rgba(210,245,235,' + a + ')';
+      ctx.beginPath(); ctx.arc(x * W, y * H, d.r, 0, Math.PI * 2); ctx.fill();
+    });
+  }
+
+  var hero = document.querySelector('.hero'), heroBody = document.querySelector('.hero-body');
+  function readScroll() { var b = hero.getBoundingClientRect(); tz = Math.max(0, Math.min(1, -b.top / (b.height * .85))); }
+  window.addEventListener('scroll', readScroll, { passive: true });
+  hero.addEventListener('pointermove', function (e) {
+    var b = hero.getBoundingClientRect();
+    tmx = (e.clientX - b.left) / b.width - .5; tmy = (e.clientY - b.top) / b.height - .5;
+  });
+  hero.addEventListener('pointerleave', function () { tmx = 0; tmy = 0; });
+
+  function frame() {
+    t += 16;
+    zoom += (tz - zoom) * .07; mx += (tmx - mx) * .045; my += (tmy - my) * .045;
+    heroBody.style.transform = 'translateY(' + (zoom * 70).toFixed(1) + 'px)';
+    heroBody.style.opacity = Math.max(0, 1 - zoom * 1.6).toFixed(3);
+    if (hero.getBoundingClientRect().bottom > 0) draw();
+    requestAnimationFrame(frame);
+  }
+  size(); readScroll();
+  if (reduce) t = 1e6;
+  draw();
+  window.addEventListener('resize', function () { size(); draw(); });
+  if (!reduce) requestAnimationFrame(frame);
+
+  // Survey chainage along the top: how far down the page you have walked.
+  var line = document.getElementById('chain-line'), val = document.getElementById('chain-val');
+  function chain() {
+    var max = document.documentElement.scrollHeight - window.innerHeight, y = window.scrollY;
+    line.style.transform = 'scaleX(' + (max > 0 ? y / max : 0) + ')';
+    var mm = Math.round(y / 3);
+    val.textContent = 'Ch. ' + Math.floor(mm / 1000) + '+' + String(mm % 1000).padStart(3, '0') + ' m';
+  }
+  window.addEventListener('scroll', chain, { passive: true }); chain();
+
+  // Sections settle into place as they arrive. Anything on screen at load is left alone.
+  if (!reduce && 'IntersectionObserver' in window) {
+    var items = document.querySelectorAll('.statement p.big, .fig, .head, .svc, .record .copy, .report, .steps li, .abroad h2, .abroad p, .states, .faq h2, details, .contact .copy, form');
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.remove('wait'); io.unobserve(en.target); } });
+    }, { rootMargin: '0px 0px -8% 0px' });
+    var groups = new Map();
+    items.forEach(function (el) {
+      if (el.getBoundingClientRect().top < window.innerHeight) return;
+      var n = groups.get(el.parentNode) || 0; groups.set(el.parentNode, n + 1);
+      el.style.transitionDelay = (Math.min(n, 5) * 90) + 'ms';
+      el.classList.add('rv', 'wait'); io.observe(el);
+    });
+  }
+})();
+</script>
+
+</body>
+</html>
